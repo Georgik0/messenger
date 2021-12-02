@@ -21,7 +21,7 @@ type User struct {
 	Username string `json:"username"`
 }
 
-func Add_users() {
+func Add_users(ctx context.Context, conn *pgx.Conn) {
 	http.HandleFunc("/users/add", func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		defer r.Body.Close()
@@ -33,15 +33,16 @@ func Add_users() {
 			return
 		}
 
-		conn, err := pgx.Connect(context.Background(), "postgres://db_user:db_user_pass@myapp_db:5432/app_db")
-		defer conn.Close(context.Background())
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+		//ctx := context.Background()
+		//conn, err := pgx.Connect(ctx, "postgres://db_user:db_user_pass@127.0.0.1:5432/app_db")
+		//if err != nil {
+		//	http.Error(w, err.Error(), 500)
+		//	return
+		//}
+		defer conn.Close(ctx)
 
 		var id int = 0
-		err = conn.QueryRow(context.Background(), "insert into my_user (username) values ($1) returning id", p.Username).Scan(&id)
+		err = conn.QueryRow(ctx, "insert into my_user (username) values ($1) returning id", p.Username).Scan(&id)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -61,8 +62,8 @@ curl --header "Content-Type: application/json" \
 */
 
 type Chat struct {
-	Name       string   `json:"name"`
-	Users      []int 	`json:"users"`
+	Name  string `json:"name"`
+	Users []int  `json:"users"`
 }
 
 func fillChatUser(users []int, chat_id int, ctx context.Context, conn *pgx.Conn) error {
@@ -73,7 +74,7 @@ func fillChatUser(users []int, chat_id int, ctx context.Context, conn *pgx.Conn)
 	defer tx.Rollback(ctx)
 
 	for _, user_id := range users {
-		_, err = tx.Exec(ctx,"insert into chat_user (user_id, chat_id) values ($1, $2)", user_id, chat_id)
+		_, err = tx.Exec(ctx, "insert into chat_user (user_id, chat_id) values ($1, $2)", user_id, chat_id)
 		if err != nil {
 			return err
 		}
@@ -136,9 +137,9 @@ curl --header "Content-Type: application/json" \
 */
 
 type Message struct {
-	Chat_id    int	  `json:"chat"`   // ссылка на идентификатор чата, в который было отправлено сообщение
-	Author_id  int	  `json:"author"` // ссылка на идентификатор отправителя сообщения, отношение многие-к-одному
-	Text       string `json:"text"`   // текст отправленного сообщения
+	Chat_id   int    `json:"chat"`   // ссылка на идентификатор чата, в который было отправлено сообщение
+	Author_id int    `json:"author"` // ссылка на идентификатор отправителя сообщения, отношение многие-к-одному
+	Text      string `json:"text"`   // текст отправленного сообщения
 }
 
 func Message_add() {
@@ -230,7 +231,7 @@ func Get_chats() {
 			var chat_id int
 			for row.Next() {
 				row.Scan(&chat_id)
-				fmt.Fprintf(w, " " + strconv.Itoa(chat_id))
+				fmt.Fprintf(w, " "+strconv.Itoa(chat_id))
 			}
 			fmt.Fprintln(w)
 		}
@@ -252,7 +253,7 @@ type Chat_messages struct {
 
 func viewMessages(row *pgx.Rows, w http.ResponseWriter) {
 	var text string
-	if ((*row).Next() == false) {
+	if (*row).Next() == false {
 		fmt.Fprintf(w, "There are no messages in the chat\n")
 	} else {
 		fmt.Fprintf(w, "The chat's messages:\n")
@@ -300,7 +301,16 @@ func Get_messages() {
 }
 
 func main() {
-	Add_users()
+	handlerAddUser := &HandlerAddUser{}
+	var err error
+	handlerAddUser.Ctx = context.Background()
+	conn, err := pgx.Connect(handlerAddUser.Ctx, "postgres://db_user:db_user_pass@127.0.0.1:5432/app_db")
+	if err != nil {
+		fmt.Printf("%v\n", err.Error())
+		return
+	}
+	handlerAddUser.conn_db = conn
+	http.Handle("/users/add", handlerAddUser)
 	Create_chat()
 	Message_add()
 	Get_chats()
