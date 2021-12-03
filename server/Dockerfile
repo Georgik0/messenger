@@ -6,10 +6,11 @@ COPY go.mod ./
 RUN go get "github.com/jackc/pgx/v4"
 RUN go mod download
 
-COPY chat_avito.go checker.go ./
+COPY ./ ./
 
-RUN go build -o /chat_avito
+RUN cd ./chat_avito \
+    go build
 
 EXPOSE 9000
 
-CMD [ "/chat_avito" ]
+CMD [ "./chat_avito" ]

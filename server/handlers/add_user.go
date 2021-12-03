@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"context"
@@ -17,9 +17,14 @@ curl --header "Content-Type: application/json" \
 */
 
 type HandlerAddUser struct {
-	Name    string          `json:"username,int"`
-	Ctx     context.Context `json:"-"`
-	conn_db *pgx.Conn       `json:"-"`
+	Name    string           `json:"username,int"`
+	Ctx     *context.Context `json:"-"`
+	conn_db *pgx.Conn        `json:"-"`
+}
+
+func (user *HandlerAddUser) InitHandler(ctx *context.Context, conn_db *pgx.Conn) {
+	user.Ctx = ctx
+	user.conn_db = conn_db
 }
 
 func (user *HandlerAddUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +38,7 @@ func (user *HandlerAddUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var id int = 0
-	err = user.conn_db.QueryRow(user.Ctx, "insert into my_user (username) values ($1) returning id", user.Name).Scan(&id)
+	err = user.conn_db.QueryRow(*user.Ctx, "insert into my_user (username) values ($1) returning id", user.Name).Scan(&id)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
