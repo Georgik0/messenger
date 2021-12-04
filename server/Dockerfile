@@ -4,12 +4,11 @@ WORKDIR /app
 
 COPY go.mod ./
 RUN go get "github.com/jackc/pgx/v4"
-RUN go mod download
 
 COPY ./ ./
 
-RUN cd ./chat_avito \
-    go build
+WORKDIR /app/chat_avito
+RUN go build
 
 EXPOSE 9000
 

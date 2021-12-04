@@ -11,7 +11,7 @@ import (
 func main() {
 	var err error
 	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, "postgres://db_user:db_user_pass@127.0.0.1:5432/app_db")
+	conn, err := pgx.Connect(ctx, "postgres://db_user:db_user_pass@myapp_db:5432/app_db")
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 		return
