@@ -27,17 +27,25 @@ CREATE TABLE message (
      created_at timestamp default current_timestamp
 );
 
-/*CREATE TABLE chat_message
-(
-    id         integer PRIMARY KEY,
-    chat_id integer not null,
-    foreign key (chat_id) references chat(id),
-    message_id integer not null,
-    foreign key (message_id) references message(id)
-);*/
+INSERT INTO my_user (username)
+VALUES
+       ('test1'),
+       ('test2'),
+       ('test3');
 
-/*CREATE TABLE user_message (
-    id integer PRIMARY KEY,
-    message_id integer not null,
-    foreign key (message_id) references message(id)
-);*/
+INSERT INTO chat(name)
+VALUES
+    ('chat1'),
+    ('chat2');
+
+INSERT INTO chat_user(user_id, chat_id)
+VALUES
+    (1,1),
+    (2,1),
+    (1,2),
+    (3,2);
+
+INSERT INTO message(chat_id, author_id, text)
+VALUES
+    (1,1,'test1 write in chat1'),
+    (2,1, 'test1 write in chat2');

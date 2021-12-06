@@ -21,12 +21,12 @@ type HandlerAddChat struct {
 	Name    string           `json:"name"`
 	Users   []int            `json:"users"`
 	Ctx     *context.Context `json:"-"`
-	conn_db *pgx.Conn        `json:"-"`
+	Conn_db *pgx.Conn        `json:"-"`
 }
 
 func (chat *HandlerAddChat) InitHandler(ctx *context.Context, conn_db *pgx.Conn) {
 	chat.Ctx = ctx
-	chat.conn_db = conn_db
+	chat.Conn_db = conn_db
 }
 
 func (chat *HandlerAddChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -39,20 +39,24 @@ func (chat *HandlerAddChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = interactorsDb.CheckUsers(chat.Users, *chat.Ctx, chat.conn_db); err != nil {
+	if chat.Users == nil || chat.Ctx == nil || chat.Conn_db == nil {
+		fmt.Printf("Nil\n")
+	}
+	fmt.Printf("Users: %v\n", chat.Users)
+	if err = interactorsDb.CheckUsers(chat.Users, *chat.Ctx, chat.Conn_db); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
 	var id int
-	err = chat.conn_db.QueryRow(*chat.Ctx, "insert into chat (name) values ($1) returning id", chat.Name).Scan(&id)
+	err = chat.Conn_db.QueryRow(*chat.Ctx, "insert into chat (name) values ($1) returning id", chat.Name).Scan(&id)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	} else {
-		fmt.Fprintln(w, "Id созданного чата", id)
+		fmt.Fprintln(w, "Chat id", id)
 	}
-	if err = interactorsDb.FillChatUser(chat.Users, id, chat.Ctx, chat.conn_db); err != nil {
+	if err = interactorsDb.FillChatUser(chat.Users, id, chat.Ctx, chat.Conn_db); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}

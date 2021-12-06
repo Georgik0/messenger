@@ -7,13 +7,12 @@ import (
 	"messenger/interactorsDb"
 	"net/http"
 	"net/http/httptest"
-	"os/exec"
 	"testing"
 	"time"
 )
 
 func TestHandlerAddUser_ServeHTTP(t *testing.T) {
-	cmdStart := "sudo docker-compose up --build -d test_db"
+	/*cmdStart := "sudo docker-compose up --build -d test_db"
 	cmdEnd := "sudo docker-compose stop test_db"
 	cmdDeleteData := "sudo rm -rf ../test_data"
 	c := exec.Command("/bin/sh", "-c", cmdStart)
@@ -22,19 +21,19 @@ func TestHandlerAddUser_ServeHTTP(t *testing.T) {
 	err := c.Run()
 	if err != nil {
 		t.Error(err)
-	}
+	}*/
 
 	var conn *pgx.Conn
 	ctx := context.Background()
-	timer_connect := time.NewTimer(10 * time.Second)
-	conn, err = interactorsDb.GetConnect(&ctx, "5431")
+	timer_connect := time.NewTimer(5 * time.Second)
+	conn, err := interactorsDb.GetConnect(&ctx, "5431")
 	for err != nil {
 		select {
 		case <-timer_connect.C:
 			if err == nil {
-				t.Error(err)
-				return
+				t.Errorf("Please, run docker container with test_db, err = %v\n", err)
 			}
+			return
 		default:
 			conn, err = interactorsDb.GetConnect(&ctx, "5431")
 			continue
@@ -59,7 +58,7 @@ func TestHandlerAddUser_ServeHTTP(t *testing.T) {
 				Ctx:     &ctx,
 				Conn_db: conn,
 			},
-			want: "User id: 1\n",
+			want: "User id: 4\n",
 		},
 		{
 			name:   "Ok",
@@ -71,12 +70,11 @@ func TestHandlerAddUser_ServeHTTP(t *testing.T) {
 				Ctx:     &ctx,
 				Conn_db: conn,
 			},
-			want: "User id: 2\n",
+			want: "ERROR: duplicate key value violates unique constraint \"my_user_username_key\" (SQLSTATE 23505)\n",
 		},
 	}
 
 	for _, current_case := range cases {
-		//t.Run(current_case.name, func(t *testing.T) {
 		request := httptest.NewRequest(current_case.method, "/users/add", bytes.NewReader([]byte(current_case.json)))
 		responseRecoder := httptest.NewRecorder()
 
@@ -84,6 +82,5 @@ func TestHandlerAddUser_ServeHTTP(t *testing.T) {
 		if responseRecoder.Body.String() != current_case.want {
 			t.Errorf("received: %v	expected: %v\n", responseRecoder.Body.String(), current_case.want)
 		}
-		//})
 	}
 }
