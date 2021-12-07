@@ -59,6 +59,6 @@ func (message *HandlerAddMessage) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		http.Error(w, err.Error(), 500)
 		return
 	} else {
-		fmt.Fprintln(w, "Id созданного сообщения", id)
+		fmt.Fprintln(w, "Message id:", id)
 	}
 }

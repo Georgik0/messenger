@@ -42,7 +42,7 @@ func (chat *HandlerAddChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if chat.Users == nil || chat.Ctx == nil || chat.Conn_db == nil {
 		fmt.Printf("Nil\n")
 	}
-	fmt.Printf("Users: %v\n", chat.Users)
+
 	if err = interactorsDb.CheckUsers(chat.Users, *chat.Ctx, chat.Conn_db); err != nil {
 		http.Error(w, err.Error(), 500)
 		return

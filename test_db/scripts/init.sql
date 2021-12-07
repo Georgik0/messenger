@@ -29,9 +29,9 @@ CREATE TABLE message (
 
 INSERT INTO my_user (username)
 VALUES
-       ('test1'),
-       ('test2'),
-       ('test3');
+       ('user1'),
+       ('user2'),
+       ('user3');
 
 INSERT INTO chat(name)
 VALUES
@@ -47,5 +47,5 @@ VALUES
 
 INSERT INTO message(chat_id, author_id, text)
 VALUES
-    (1,1,'test1 write in chat1'),
-    (2,1, 'test1 write in chat2');
+    (1,1,'user1 write in chat1'),
+    (2,1, 'user1 write in chat2');

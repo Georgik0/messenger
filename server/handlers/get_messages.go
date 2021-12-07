@@ -20,12 +20,12 @@ curl --header "Content-Type: application/json" \
 type HandlerGetChatMessages struct {
 	Chat    int              `json:"chat"`
 	Ctx     *context.Context `json:"-"`
-	conn_db *pgx.Conn        `json:"-"`
+	Conn_db *pgx.Conn        `json:"-"`
 }
 
 func (chat_messages *HandlerGetChatMessages) InitHandler(ctx *context.Context, conn_db *pgx.Conn) {
 	chat_messages.Ctx = ctx
-	chat_messages.conn_db = conn_db
+	chat_messages.Conn_db = conn_db
 }
 
 func (chat_messages *HandlerGetChatMessages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -38,12 +38,12 @@ func (chat_messages *HandlerGetChatMessages) ServeHTTP(w http.ResponseWriter, r 
 		return
 	}
 
-	if err = interactorsDb.CheckChats([]int{chat_messages.Chat}, context.Background(), chat_messages.conn_db); err != nil {
+	if err = interactorsDb.CheckChats([]int{chat_messages.Chat}, context.Background(), chat_messages.Conn_db); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	if row, err := chat_messages.conn_db.Query(context.Background(), "SELECT text FROM message WHERE chat_id = ($1)", chat_messages.Chat); err != nil {
+	if row, err := chat_messages.Conn_db.Query(context.Background(), "SELECT text FROM message WHERE chat_id = ($1)", chat_messages.Chat); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	} else {

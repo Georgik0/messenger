@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-func Init_connect_for_test(conn **pgx.Conn, ctx *context.Context) error {
+func Init_connect_for_test(conn **pgx.Conn, ctx *context.Context, host string, port string) error {
 	timer_connect := time.NewTimer(5 * time.Second)
 	var err error
-	*conn, err = GetConnect(ctx, "5431")
+	*conn, err = GetConnect(ctx, host, port)
 	for err != nil {
 		select {
 		case <-timer_connect.C:
 			return err
 		default:
-			*conn, err = GetConnect(ctx, "5431")
+			*conn, err = GetConnect(ctx, host, port)
 			continue
 		}
 	}

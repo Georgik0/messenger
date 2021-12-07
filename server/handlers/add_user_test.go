@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"bytes"
 	"context"
 	"github.com/jackc/pgx/v4"
 	"messenger/interactorsDb"
 	"net/http"
-	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func TestHandlerAddUser_ServeHTTP(t *testing.T) {
@@ -25,19 +22,13 @@ func TestHandlerAddUser_ServeHTTP(t *testing.T) {
 
 	var conn *pgx.Conn
 	ctx := context.Background()
-	timer_connect := time.NewTimer(5 * time.Second)
-	conn, err := interactorsDb.GetConnect(&ctx, "5431")
-	for err != nil {
-		select {
-		case <-timer_connect.C:
-			if err == nil {
-				t.Errorf("Please, run docker container with test_db, err = %v\n", err)
-			}
-			return
-		default:
-			conn, err = interactorsDb.GetConnect(&ctx, "5431")
-			continue
-		}
+	if err := interactorsDb.Init_connect_for_test(&conn, &ctx, "127.0.0.1", "5431"); err != nil {
+		t.Errorf("Please, run docker container with test_db, err = %v\n", err)
+	}
+
+	handler_input := &HandlerAddUser{
+		Ctx:     &ctx,
+		Conn_db: conn,
 	}
 
 	cases := []struct {
@@ -45,7 +36,7 @@ func TestHandlerAddUser_ServeHTTP(t *testing.T) {
 		method string
 		target string
 		json   string
-		input  HandlerAddUser
+		input  http.Handler
 		want   string
 	}{
 		{
@@ -53,34 +44,18 @@ func TestHandlerAddUser_ServeHTTP(t *testing.T) {
 			method: http.MethodPost,
 			target: "/users/add",
 			json:   `{"username": "user_1"}`,
-			input: HandlerAddUser{
-				Name:    "",
-				Ctx:     &ctx,
-				Conn_db: conn,
-			},
-			want: "User id: 4\n",
+			input:  handler_input,
+			want:   "User id: 4\n",
 		},
 		{
 			name:   "Ok",
 			method: http.MethodPost,
 			target: "/users/add",
 			json:   `{"username": "user_1"}`,
-			input: HandlerAddUser{
-				Name:    "",
-				Ctx:     &ctx,
-				Conn_db: conn,
-			},
-			want: "ERROR: duplicate key value violates unique constraint \"my_user_username_key\" (SQLSTATE 23505)\n",
+			input:  handler_input,
+			want:   "ERROR: duplicate key value violates unique constraint \"my_user_username_key\" (SQLSTATE 23505)\n",
 		},
 	}
 
-	for _, current_case := range cases {
-		request := httptest.NewRequest(current_case.method, "/users/add", bytes.NewReader([]byte(current_case.json)))
-		responseRecoder := httptest.NewRecorder()
-
-		current_case.input.ServeHTTP(responseRecoder, request)
-		if responseRecoder.Body.String() != current_case.want {
-			t.Errorf("received: %v	expected: %v\n", responseRecoder.Body.String(), current_case.want)
-		}
-	}
+	CheckTestsRange(HndlInput(cases), t)
 }

@@ -5,16 +5,21 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4"
 	"messenger/handlers"
+	"messenger/interactorsDb"
 	"net/http"
 )
 
 func main() {
 	var err error
+	var conn *pgx.Conn
 	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, "postgres://db_user:db_user_pass@myapp_db:5432/app_db")
+	/*conn, err := pgx.Connect(ctx, "postgres://db_user:db_user_pass@myapp_db:5432/app_db")
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 		return
+	}*/
+	if err = interactorsDb.Init_connect_for_test(&conn, &ctx, "myapp_db", "5432"); err != nil {
+		fmt.Errorf("Please, run docker container with test_db, err = %v\n", err)
 	}
 
 	handlerAddUser := &handlers.HandlerAddUser{}

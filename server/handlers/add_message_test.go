@@ -11,8 +11,13 @@ import (
 func TestHandlerAddMessage_ServeHTTP(t *testing.T) {
 	var conn *pgx.Conn
 	ctx := context.Background()
-	if err := interactorsDb.Init_connect_for_test(&conn, &ctx); err != nil {
+	if err := interactorsDb.Init_connect_for_test(&conn, &ctx, "127.0.0.1", "5431"); err != nil {
 		t.Errorf("Please, run docker container with test_db, err = %v\n", err)
+	}
+
+	handler_input := &HandlerAddMessage{
+		Ctx:     &ctx,
+		Conn_db: conn,
 	}
 
 	cases := []struct {
@@ -20,20 +25,34 @@ func TestHandlerAddMessage_ServeHTTP(t *testing.T) {
 		method string
 		target string
 		json   string
-		input  HandlerAddMessage
+		input  http.Handler
 		want   string
 	}{
 		{
 			name:   "Ok",
 			method: http.MethodPost,
-			target: "/chats/add",
-			json:   `{"name": "chat1", "users": [1, 2]}`,
-			input: HandlerAddMessage{
-				Ctx:     &ctx,
-				Conn_db: conn,
-			},
-			want: "ERROR: duplicate key value violates unique constraint \"chat_name_key\" (SQLSTATE 23505)\n",
+			target: "/messages/add",
+			json:   `{"chat": 1, "author": 1, "text": "hi"}`,
+			input:  handler_input,
+			want:   "Message id: 3\n",
+		},
+		{
+			name:   "Ok",
+			method: http.MethodPost,
+			target: "/messages/add",
+			json:   `{"chat": 0, "author": 1, "text": "hi"}`,
+			input:  handler_input,
+			want:   "Chat with id = 0 does not exist\n",
+		},
+		{
+			name:   "Ok",
+			method: http.MethodPost,
+			target: "/messages/add",
+			json:   `{"chat": 1, "author": 321, "text": "Привет"}`,
+			input:  handler_input,
+			want:   "User with id = 321 does not exist\n",
 		},
 	}
-	t.Log(cases)
+
+	CheckTestsRange(HndlInput(cases), t)
 }
