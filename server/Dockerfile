@@ -1,15 +1,20 @@
-FROM golang:1.17.2-alpine
+FROM golang:1.19-alpine3.17 AS builder
 
-WORKDIR /app
+ENV PROJECT_PATH=/usr/local/go/src/messenger
 
-COPY go.mod ./
-RUN go get "github.com/jackc/pgx/v4"
+COPY . $PROJECT_PATH
 
-COPY ./ ./
+WORKDIR $PROJECT_PATH
 
-WORKDIR /app/chat_avito
-RUN go build
+RUN go mod download && \
+    CGO_ENABLED=0 go build -o messenger cmd/main.go
+
+FROM alpine:3.17
+
+WORKDIR /
+
+COPY --from=builder /usr/local/go/src/messenger/messenger .
 
 EXPOSE 9000
 
-CMD [ "./chat_avito" ]
+CMD ["./messenger"]

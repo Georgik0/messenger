@@ -16,8 +16,8 @@ func TestHandlerAddChat_ServeHTTP(t *testing.T) {
 	}
 
 	handler_input := &HandlerAddChat{
-		Ctx:     &ctx,
-		Conn_db: conn,
+		Ctx:    ctx,
+		ConnDB: conn,
 	}
 
 	cases := []struct {

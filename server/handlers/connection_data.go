@@ -6,17 +6,17 @@ import (
 )
 
 type ConnectionDataI interface {
-	InitHandler(ctx *context.Context, conn_db *pgx.Conn)
+	InitHandler(ctx *context.Context, connDB *pgx.Conn)
 }
 
 type ConnectionData struct {
-	Ctx     *context.Context `json:"-"`
-	Conn_db *pgx.Conn        `json:"-"`
+	Ctx    *context.Context `json:"-"`
+	connDB *pgx.Conn        `json:"-"`
 }
 
-func (data *ConnectionData) InitHandler(ctx *context.Context, conn_db *pgx.Conn) {
+func (data *ConnectionData) InitHandler(ctx *context.Context, connDB *pgx.Conn) {
 	data.Ctx = ctx
-	data.Conn_db = conn_db
+	data.connDB = connDB
 }
 
 func InitHandler(connectionDataI ConnectionDataI) {

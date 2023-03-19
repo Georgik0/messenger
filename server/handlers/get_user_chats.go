@@ -19,14 +19,14 @@ curl --header "Content-Type: application/json" \
 */
 
 type HandlerGetUserChats struct {
-	User    int              `json:"user"`
-	Ctx     *context.Context `json:"-"`
-	Conn_db *pgx.Conn        `json:"-"`
+	User   int             `json:"user"`
+	Ctx    context.Context `json:"-"`
+	connDB *pgx.Conn       `json:"-"`
 }
 
-func (user_chats *HandlerGetUserChats) InitHandler(ctx *context.Context, conn_db *pgx.Conn) {
+func (user_chats *HandlerGetUserChats) InitHandler(ctx context.Context, connDB *pgx.Conn) {
 	user_chats.Ctx = ctx
-	user_chats.Conn_db = conn_db
+	user_chats.connDB = connDB
 }
 
 func (user_chats *HandlerGetUserChats) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -39,12 +39,12 @@ func (user_chats *HandlerGetUserChats) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if err = interactorsDb.CheckUsers([]int{user_chats.User}, context.Background(), user_chats.Conn_db); err != nil {
+	if err = interactorsDb.CheckUsers([]int{user_chats.User}, context.Background(), user_chats.connDB); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	if row, err := user_chats.Conn_db.Query(context.Background(), "SELECT cu.chat_id FROM chat_user cu LEFT JOIN chat c ON c.id=cu.chat_id WHERE cu.user_id = ($1) ORDER BY c.created_at", user_chats.User); err != nil {
+	if row, err := user_chats.connDB.Query(context.Background(), "SELECT cu.chat_id FROM chat_user cu LEFT JOIN chat c ON c.id=cu.chat_id WHERE cu.user_id = ($1) ORDER BY c.created_at", user_chats.User); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	} else {

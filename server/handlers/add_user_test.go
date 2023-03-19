@@ -27,8 +27,8 @@ func TestHandlerAddUser_ServeHTTP(t *testing.T) {
 	}
 
 	handler_input := &HandlerAddUser{
-		Ctx:     &ctx,
-		Conn_db: conn,
+		Ctx:    &ctx,
+		ConnDB: conn,
 	}
 
 	cases := []struct {

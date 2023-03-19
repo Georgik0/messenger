@@ -1,9 +1,14 @@
+build:
+	go build -o messenger server/cmd/main.go
+
 start:
-	sudo docker-compose up --build go db
+	docker-compose up --build go db
 
 test:
-	sudo docker-compose up --build -d test_db
+	docker-compose up --build -d test_db
 	cd ./server/handlers; go test -v; cd ../..
-	sudo docker-compose stop test_db
-	sudo docker rm -f test_myapp_db
-	sudo rm -rf ./test_data/
+	docker-compose stop test_db
+	docker rm -f test_myapp_db
+	rm -rf ./test_data/
+
+.PHONY: build start test

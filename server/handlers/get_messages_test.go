@@ -16,8 +16,8 @@ func TestHandlerGetChatMessages_ServeHTTP(t *testing.T) {
 	}
 
 	handler_input := &HandlerGetChatMessages{
-		Ctx:     &ctx,
-		Conn_db: conn,
+		Ctx:    &ctx,
+		ConnDB: conn,
 	}
 
 	cases := []struct {
