@@ -2,16 +2,17 @@ package handlers
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4"
-	"messenger/interactorsDb"
 	"net/http"
 	"testing"
+
+	"messenger/interactorsDb"
 )
 
 func TestHandlerAddChat_ServeHTTP(t *testing.T) {
 	var conn *pgx.Conn
 	ctx := context.Background()
-	if err := interactorsDb.Init_connect_for_test(&conn, &ctx, "127.0.0.1", "5431"); err != nil {
+	conn, err := interactorsDb.InitConnect(ctx, "127.0.0.1", "5431")
+	if err != nil {
 		t.Errorf("Please, run docker container with test_db, err = %v\n", err)
 	}
 
@@ -62,5 +63,5 @@ func TestHandlerAddChat_ServeHTTP(t *testing.T) {
 		},
 	}
 
-	CheckTestsRange(HndlInput(cases), t)
+	CheckTestsRange(cases, t)
 }

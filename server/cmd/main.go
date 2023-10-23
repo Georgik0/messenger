@@ -3,18 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v4"
-	initservices "messenger/init-services"
-	"messenger/interactorsDb"
 	"net/http"
 	"os"
+
+	initservices "messenger/init-services"
+	"messenger/interactorsDb"
 )
 
 func main() {
-	var conn *pgx.Conn
 	ctx := context.Background()
 
-	err := interactorsDb.Init_connect_for_test(&conn, &ctx, "myapp_db", "5432")
+	conn, err := interactorsDb.InitConnect(ctx, "myapp_db", "5432")
 	if err != nil {
 		fmt.Errorf("Please, run docker container with db, err = %v\n", err)
 		os.Exit(1)
