@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/jackc/pgx/v4"
 	"io/ioutil"
-	"messenger/interactorsDb"
 	"net/http"
+
+	"messenger/interactorsDb"
+
+	"github.com/jackc/pgx/v4"
 )
 
 /* Создать новый чат между пользователями
@@ -39,7 +41,7 @@ func (chat *HandlerAddChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if chat.Users == nil || chat.Ctx == nil || chat.ConnDB == nil {
+	if chat == nil || chat.Users == nil || chat.Ctx == nil || chat.ConnDB == nil {
 		fmt.Printf("Nil\n")
 	}
 
